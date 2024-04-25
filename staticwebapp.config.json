@@ -1,0 +1,6 @@
+{
+  "globalHeaders": {
+    "Access-Control-Allow-Origin": "https://webapps.space-station.co.uk:8000/",
+    "Access-Control-Allow-Methods": "POST, GET, OPTIONS"
+  }
+}
