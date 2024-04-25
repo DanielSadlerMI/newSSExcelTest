@@ -720,135 +720,117 @@ async function clear() {
 //When user clicks log in this code will run
 async function login() {
     try {
-        //AF: Why does this code need to run in Excel.run? Isn't it just getting the permissions from the API?
-        await Excel.run(async (context) => {
-            document.getElementById("login-status").textContent = "Logging in...";
-            // empty the contents of the budgets drop-down
-            let size = document.getElementById("budgetList").options.length - 1;
-            for (let i = size; i >= 0; i--) {
-                document.getElementById("budgetList").remove(i);
-            }
+        document.getElementById("login-status").textContent = "Logging in...";
+        // empty the contents of the budgets drop-down
+        let size = document.getElementById("budgetList").options.length - 1;
+        for (let i = size; i >= 0; i--) {
+            document.getElementById("budgetList").remove(i);
+        }
 
-            // display 'Select User' message as a sole option in the dropdown
-            let option = document.createElement("option");
-            option.value = "nil";
-            option.text = "Select user";
-            document.getElementById("budgetList").appendChild(option);
+        // display 'Select User' message as a sole option in the dropdown
+        let option = document.createElement("option");
+        option.value = "nil";
+        option.text = "Select user";
+        document.getElementById("budgetList").appendChild(option);
 
-            let userTokenEncoded = "";
-            let email = "";
-            let name = "";
+        let userTokenEncoded = "";
+        let email = "";
+        let name = "";
 
-            // retrieve access token from Microsoft Entra ID
-            try {
-                userTokenEncoded = await OfficeRuntime.auth.getAccessToken({ allowSignInPrompt: true, allowConsentPrompt: true, forMSGraphAccess: true });
-                let userToken = jwtDecode(userTokenEncoded);
-                //console.log(userTokenEncoded);
-                //console.log(userToken);
-                email = userToken.preferred_username;
-                name = userToken.name;
-            } catch (error) {
-                console.error(error);
-            }
+        // retrieve access token from Microsoft Entra ID
+        try {
+            userTokenEncoded = await OfficeRuntime.auth.getAccessToken({ allowSignInPrompt: true, allowConsentPrompt: true, forMSGraphAccess: true });
+            let userToken = jwtDecode(userTokenEncoded);
+            //console.log(userTokenEncoded);
+            //console.log(userToken);
+            email = userToken.preferred_username;
+            name = userToken.name;
+        } catch (error) {
+            console.error(error);
+        }
 
-            // check if a token was successfully retrieved
-            if (userTokenEncoded != "") {
-                let errorCheck = "";
-                let jsonString = "[]";
+        // check if a token was successfully retrieved
+        if (userTokenEncoded != "") {
+            let errorCheck = "";
+            let jsonString = "[]";
 
-                // validate authorization token
-                await fetch(resourceUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': userTokenEncoded
-                    }
-                })
-                    .then(response => response.json())
-                    .then(response => JSON.stringify(response))
-                    .then(response => { jsonString = response })
-                    .catch((error) => { errorCheck = error });
+            // validate authorization token
+            await fetch(resourceUrl, {
+                method: 'GET',
+                headers: {
+                    'Authorization': userTokenEncoded
+                }
+            })
+                .then(response => response.json())
+                .then(response => JSON.stringify(response))
+                .then(response => { jsonString = response })
+                .catch((error) => { errorCheck = error });
 
-                // check if the response has an error
-                if (errorCheck == "") {
+            // check if the response has an error
+            if (errorCheck == "") {
+                //console.log(jsonString);
+
+                let resourceResponse = JSON.parse(jsonString);
+
+                let dataUrl = resourceResponse["url"] + 'request';
+
+                // request user permissions from the API with the authorization token
+                if (dataUrl != "") {
+                    let dataBody = '{ "authorization":"' + userTokenEncoded + '", "contents":{"version":"1.0","action":"user"} }';
+                    //console.log(dataBody);
+                    //console.log(dataUrl);
+                    errorCheck = "";
+                    await fetch(dataUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: dataBody
+                    })
+                        .then(response => response.json())
+                        .then(response => JSON.stringify(response))
+                        .then(response => { jsonString = response })
+                        .catch((error) => { errorCheck = error });
+
                     //console.log(jsonString);
 
-                    let resourceResponse = JSON.parse(jsonString);
+                    // check if the response has an error
+                    if (errorCheck == "") {
+                        let visibleBudgets = JSON.parse(jsonString);
 
-                    let dataUrl = resourceResponse["url"] + 'request';
+                        // empty the contents of the budget dropdown
+                        let size = document.getElementById("budgetList").options.length - 1;
+                        for (let i = size; i >= 0; i--) {
+                            document.getElementById("budgetList").remove(i);
+                        }
 
-                    // request user permissions from the API with the authorization token
-                    if (dataUrl != "") {
-                        let dataBody = '{ "authorization":"' + userTokenEncoded + '", "contents":{"version":"1.0","action":"user"} }';
-                        //console.log(dataBody);
-                        //console.log(dataUrl);
-                        errorCheck = "";
-                        await fetch(dataUrl, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: dataBody
-                        })
-                            .then(response => response.json())
-                            .then(response => JSON.stringify(response))
-                            .then(response => { jsonString = response })
-                            .catch((error) => { errorCheck = error });
+                        let written = false;
 
-                        //console.log(jsonString);
+                        // fill the dropdown with the budget codes and names provided in the response
+                        for (let i = 0; i < visibleBudgets.length; i++) {
+                            let option = document.createElement("option");
+                            option.value = visibleBudgets[i]["SiteID"];
+                            option.text = visibleBudgets[i]["SiteName"];
+                            document.getElementById("budgetList").appendChild(option);
+                            written = true;
+                        }
 
-                        // check if the response has an error
-                        if (errorCheck == "") {
-                            let visibleBudgets = JSON.parse(jsonString);
-
-                            // empty the contents of the budget dropdown
-                            let size = document.getElementById("budgetList").options.length - 1;
-                            for (let i = size; i >= 0; i--) {
-                                document.getElementById("budgetList").remove(i);
-                            }
-
-                            let written = false;
-
-                            // fill the dropdown with the budget codes and names provided in the response
-                            for (let i = 0; i < visibleBudgets.length; i++) {
-                                let option = document.createElement("option");
-                                option.value = visibleBudgets[i]["SiteID"];
-                                option.text = visibleBudgets[i]["SiteName"];
-                                document.getElementById("budgetList").appendChild(option);
-                                written = true;
-                            }
-
-                            // check if any budgets were added to the dropdown
-                            if (written) {
-                                document.getElementById("login-status").textContent = "Logged in as " + name;
-                            }
-                            else {
-                                let option = document.createElement("option");
-                                option.value = "nil";
-                                option.text = "Select user";
-                                document.getElementById("budgetList").appendChild(option);
-
-                                document.getElementById("login-status").textContent = "No response from data resource";
-                            }
+                        // check if any budgets were added to the dropdown
+                        if (written) {
+                            document.getElementById("login-status").textContent = "Logged in as " + name;
                         }
                         else {
-                            //console.log(errorCheck);
-                            // empty the contents of the budgets dropdown
-                            let size = document.getElementById("budgetList").options.length - 1;
-                            for (let i = size; i >= 0; i--) {
-                                document.getElementById("budgetList").remove(i);
-                            }
-
-                            // display error message as a sole option in the dropdown
                             let option = document.createElement("option");
                             option.value = "nil";
                             option.text = "Select user";
                             document.getElementById("budgetList").appendChild(option);
 
-                            document.getElementById("login-status").textContent = "Data resource unreachable";
+                            document.getElementById("login-status").textContent = "No response from data resource";
                         }
                     }
                     else {
-                        // empty the contents of the budget dropdown
+                        //console.log(errorCheck);
+                        // empty the contents of the budgets dropdown
                         let size = document.getElementById("budgetList").options.length - 1;
                         for (let i = size; i >= 0; i--) {
                             document.getElementById("budgetList").remove(i);
@@ -860,7 +842,7 @@ async function login() {
                         option.text = "Select user";
                         document.getElementById("budgetList").appendChild(option);
 
-                        document.getElementById("login-status").textContent = "No response from URL resource";
+                        document.getElementById("login-status").textContent = "Data resource unreachable";
                     }
                 }
                 else {
@@ -876,7 +858,7 @@ async function login() {
                     option.text = "Select user";
                     document.getElementById("budgetList").appendChild(option);
 
-                    document.getElementById("login-status").textContent = "URL resource unreachable";
+                    document.getElementById("login-status").textContent = "No response from URL resource";
                 }
             }
             else {
@@ -892,16 +874,35 @@ async function login() {
                 option.text = "Select user";
                 document.getElementById("budgetList").appendChild(option);
 
-                document.getElementById("login-status").textContent = "Cannot log in";
+                document.getElementById("login-status").textContent = "URL resource unreachable";
             }
-        });
+        }
+        else {
+            // empty the contents of the budget dropdown
+            let size = document.getElementById("budgetList").options.length - 1;
+            for (let i = size; i >= 0; i--) {
+                document.getElementById("budgetList").remove(i);
+            }
+
+            // display error message as a sole option in the dropdown
+            let option = document.createElement("option");
+            option.value = "nil";
+            option.text = "Select user";
+            document.getElementById("budgetList").appendChild(option);
+
+            let number = await testFunction(2);
+
+            document.getElementById("login-status").textContent = "Cannot log in, " + number;
+        }
     } catch (error) {
         console.error(error);
         document.getElementById("login-status").textContent = "Encountered unexpected error";
     }
 }
 
-
+async function testFunction(x) {
+    return x+1;
+}
 
 //Login Function
 //When user clicks log in this code will run
