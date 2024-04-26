@@ -336,7 +336,7 @@ async function load() {
                                                 splitDate = date.split("/");
                                                 if (splitDate.length == 3) {
                                                     if (!splitDate[1].isNaN) {
-                                                        // the index of the budget code is the month number minus 1, times 2
+                                                        // the index of the budget code is the month number minus 1, times 2 in columnIndices
                                                         monthIndex = columnIndices[(parseInt(splitDate[1]) - 1) * 2];
                                                         done = false;
                                                         // check if the row already pointed at has the RPG code, for speed
@@ -439,15 +439,14 @@ async function load() {
                                                                         datum = point["ActualValue"];
                                                                     }
 
-                                                                    // readjust the column index for the actuals column of the current month (budget column index plus 1)
+                                                                    // readjust the column index for the actuals column of the current month (budget column index plus 1 in columnIndices)
                                                                     monthIndex = columnIndices[((parseInt(splitDate[1]) - 1) * 2) + 1];
 
                                                                     // set cell to actual value
                                                                     dataRange = fullRange.getCell(j, monthIndex);
-                                                                    //dataRange.clear(Excel.ClearApplyTo.contents);
                                                                     dataRange.values = [[datum]];
 
-                                                                    // readjust the column index for the actuals column of the current month (budget column index plus 1)
+                                                                    // set this cell to true in the update grid
                                                                     updateGrid[j][monthIndex] = true;
 
                                                                     done = true;
