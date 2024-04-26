@@ -25,13 +25,54 @@ Office.onReady((info) => {
     }
 });
 
+async function testExcelRunFunction(range, row, col, text) {
+    await Excel.run(async (context) => {
+        let dataRange = range.getCell(row, col);
+        dataRange.values = [[text]];
+    });
+}
+
+async function search(context, fullRange, index, marker) {
+    try {
+        // search for marker in each column, from index 0
+        let columnRange = fullRange.getColumn(index);
+        let tempRange = columnRange.findOrNullObject(marker, {
+            completeMatch: true,
+            matchCase: true,
+            searchDirection: Excel.SearchDirection.forward
+        });
+        await context.sync();
+        if (!tempRange.isNullObject) {
+            return true;
+        }
+        return false;
+    }
+    catch (error) {
+        console.error(error);
+        document.getElementById("load-status").textContent = "Load failed!!!!!";
+        document.getElementById("load-bar").style.width = "0%";
+    }
+}
+
 /* Retrieves budget data from the API, and loads it into the Excel sheet */
 async function load() {
     try {
         await Excel.run(async (context) => {
             // checks if a budget has been selected
             if (document.getElementById("budgetList").value == "nil") {
-                document.getElementById("load-status").textContent = "Please select a user and log in";
+                let number = await testFunction(5);
+                // set cell to actual value
+                let currentSheet = context.workbook.worksheets.getActiveWorksheet();
+                let fullRange = currentSheet.getRange();
+                //await testExcelRunFunction(fullRange, 3, 5, "test");
+                await context.sync();
+                for (let i = 0; i < 10; i++) {
+                    let found = await search(context, fullRange, i, "#R");
+                    if (found) {
+                        await testExcelRunFunction(fullRange, 10, i, "YES");
+                    }
+                }
+                document.getElementById("load-status").textContent = "Please select a user and log in, " + number;
                 document.getElementById("load-bar").style.width = "0%";
             }
             else {
