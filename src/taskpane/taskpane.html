@@ -17,10 +17,8 @@
     <link rel="stylesheet"
         href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/11.0.0/css/fabric.min.css" />
 
-    <!-- Template styles -->
+    <!-- Template styles -->  
     <link href="taskpane.css" rel="stylesheet" type="text/css" />
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.0.6/css/pico.min.css" />
 </head>
 
 <body class="ms-font-m ms-welcome ms-Fabric">
@@ -35,25 +33,19 @@
             your add-in to see app body.</h2>
     </section>
     <main id="app-body" class="ms-welcome__main" style="display: none;">
-        <div role="button" id="login" class="ms-welcome__action ms-Button ms-Button--hero ms-font-m">
-            <span class="ms-Button-label">Log In</span>
-        </div>
+        <button id="login" class="ms-welcome__action ms-Button ms-Button--hero ms-font-m">Log In</button>
         <p id="login-status" class="status"> </p>
         <p class="ms-font-m instruction">Choose a budget to view:</p>
         <select id="budgetList">
             <option value="nil">Select user</option>
         </select>
         <p class="ms-font-m instruction">Select budget, and load its data</p>
-        <div role="button" id="load" class="ms-welcome__action ms-Button ms-Button--hero ms-font-xl">
-            <span class="ms-Button-label">Load Data</span>
-        </div>
+        <button id="load" class="ms-welcome__action ms-Button ms-Button--hero ms-font-xl">Load Data</button>
         <p id="load-status" class="status"> </p>
         <div id="load-progress" class="progress-bar">
             <div id="load-bar" class=" = progress-bar-fill"></div>
         </div>
-        <div role="button" id="clear" class="ms-welcome__action ms-Button ms-Button--hero ms-font-m">
-            <span class="ms-Button-label">Clear Data</span>
-        </div>
+        <button id="clear" class="ms-welcome__action ms-Button ms-Button--hero ms-font-m">Clear Data</button>
         <p id="clear-status" class="status"> </p>
     </main>
 </body>
