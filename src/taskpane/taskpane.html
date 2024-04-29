@@ -33,19 +33,25 @@
             your add-in to see app body.</h2>
     </section>
     <main id="app-body" class="ms-welcome__main" style="display: none;">
-        <button id="login" class="ms-welcome__action ms-Button ms-Button--hero ms-font-m">Log In</button>
+        <div role="button" id="login" class="ms-welcome__action ms-Button ms-Button--hero ms-font-xl">
+            <span class="ms-Button-label">Log In</span>
+        </div>
         <p id="login-status" class="status"> </p>
         <p class="ms-font-m instruction">Choose a budget to view:</p>
         <select id="budgetList">
             <option value="nil">Select user</option>
         </select>
         <p class="ms-font-m instruction">Select budget, and load its data</p>
-        <button id="load" class="ms-welcome__action ms-Button ms-Button--hero ms-font-xl">Load Data</button>
+        <div role="button" id="load" class="ms-welcome__action ms-Button ms-Button--hero ms-font-xl">
+            <span class="ms-Button-label">Load Data</span>
+        </div>
         <p id="load-status" class="status"> </p>
         <div id="load-progress" class="progress-bar">
             <div id="load-bar" class=" = progress-bar-fill"></div>
         </div>
-        <button id="clear" class="ms-welcome__action ms-Button ms-Button--hero ms-font-m">Clear Data</button>
+        <div role="button" id="clear" class="ms-welcome__action ms-Button ms-Button--hero ms-font-m">
+            <span class="ms-Button-label">Clear Data</span>
+        </div>
         <p id="clear-status" class="status"> </p>
     </main>
 </body>
